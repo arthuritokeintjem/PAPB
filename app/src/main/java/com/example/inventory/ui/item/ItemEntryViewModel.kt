@@ -21,28 +21,37 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import com.example.inventory.data.Item
+import com.example.inventory.data.ItemsRepository
 import java.text.NumberFormat
 
 /**
- * ViewModel to validate and insert items in the Room database.
+ * ViewModel untuk memvalidasi dan menyisipkan item ke dalam database Room.
  */
-class ItemEntryViewModel : ViewModel() {
-
+//class ItemEntryViewModel : ViewModel() {
+class ItemEntryViewModel(private val itemsRepository: ItemsRepository) : ViewModel() {
     /**
-     * Holds current item ui state
+     * Menyimpan status UI item saat ini.
      */
     var itemUiState by mutableStateOf(ItemUiState())
         private set
 
     /**
-     * Updates the [itemUiState] with the value provided in the argument. This method also triggers
-     * a validation for input values.
+     * Memperbarui [itemUiState] dengan nilai yang diberikan dalam argumen.
+     * Fungsi ini juga memicu validasi untuk nilai input.
      */
     fun updateUiState(itemDetails: ItemDetails) {
         itemUiState =
             ItemUiState(itemDetails = itemDetails, isEntryValid = validateInput(itemDetails))
     }
 
+    // Fungsi untuk menyimpan item jika input valid.
+    suspend fun saveItem() {
+        if (validateInput()) {
+            itemsRepository.insertItem(itemUiState.itemDetails.toItem())
+        }
+    }
+
+    // Validasi input untuk memastikan semua field tidak kosong.
     private fun validateInput(uiState: ItemDetails = itemUiState.itemDetails): Boolean {
         return with(uiState) {
             name.isNotBlank() && price.isNotBlank() && quantity.isNotBlank()
@@ -51,13 +60,16 @@ class ItemEntryViewModel : ViewModel() {
 }
 
 /**
- * Represents Ui State for an Item.
+ * Mewakili status UI untuk item.
  */
 data class ItemUiState(
     val itemDetails: ItemDetails = ItemDetails(),
     val isEntryValid: Boolean = false
 )
 
+/**
+ * Menyimpan rincian item yang dimasukkan pengguna.
+ */
 data class ItemDetails(
     val id: Int = 0,
     val name: String = "",
@@ -66,23 +78,25 @@ data class ItemDetails(
 )
 
 /**
- * Extension function to convert [ItemDetails] to [Item]. If the value of [ItemDetails.price] is
- * not a valid [Double], then the price will be set to 0.0. Similarly if the value of
- * [ItemDetails.quantity] is not a valid [Int], then the quantity will be set to 0
+ * Fungsi ekstensi untuk mengonversi [ItemDetails] menjadi [Item].
+ * Jika harga atau kuantitas tidak valid, maka akan diatur ke nilai default (0.0 untuk harga, 0 untuk kuantitas).
  */
 fun ItemDetails.toItem(): Item = Item(
     id = id,
     name = name,
-    price = price.toDoubleOrNull() ?: 0.0,
-    quantity = quantity.toIntOrNull() ?: 0
+    price = price.toDoubleOrNull() ?: 0.0, // Jika harga tidak valid, atur ke 0.0
+    quantity = quantity.toIntOrNull() ?: 0 // Jika kuantitas tidak valid, atur ke 0
 )
 
+/**
+ * Fungsi ekstensi untuk memformat harga item dalam bentuk mata uang.
+ */
 fun Item.formatedPrice(): String {
     return NumberFormat.getCurrencyInstance().format(price)
 }
 
 /**
- * Extension function to convert [Item] to [ItemUiState]
+ * Fungsi ekstensi untuk mengonversi [Item] menjadi [ItemUiState]
  */
 fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState(
     itemDetails = this.toItemDetails(),
@@ -90,7 +104,7 @@ fun Item.toItemUiState(isEntryValid: Boolean = false): ItemUiState = ItemUiState
 )
 
 /**
- * Extension function to convert [Item] to [ItemDetails]
+ * Fungsi ekstensi untuk mengonversi [Item] menjadi [ItemDetails]
  */
 fun Item.toItemDetails(): ItemDetails = ItemDetails(
     id = id,

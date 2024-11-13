@@ -33,6 +33,7 @@ import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.dimensionResource
@@ -45,22 +46,28 @@ import com.example.inventory.R
 import com.example.inventory.ui.AppViewModelProvider
 import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
+import kotlinx.coroutines.launch
 import java.util.Currency
 import java.util.Locale
 
+// Destinasi navigasi untuk ItemEntryScreen
 object ItemEntryDestination : NavigationDestination {
-    override val route = "item_entry"
-    override val titleRes = R.string.item_entry_title
+    override val route = "item_entry" // Rute untuk navigasi ke halaman item entry
+    override val titleRes = R.string.item_entry_title // Judul halaman
 }
 
+// Fungsi utama untuk tampilan layar entri item
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemEntryScreen(
-    navigateBack: () -> Unit,
-    onNavigateUp: () -> Unit,
-    canNavigateBack: Boolean = true,
-    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory)
+    navigateBack: () -> Unit, // Fungsi untuk navigasi kembali
+    onNavigateUp: () -> Unit, // Fungsi untuk navigasi ke atas
+    canNavigateBack: Boolean = true, // Status apakah bisa menavigasi kembali
+    viewModel: ItemEntryViewModel = viewModel(factory = AppViewModelProvider.Factory) // Mengambil viewModel
 ) {
+    val coroutineScope = rememberCoroutineScope()
+
+    // Scaffold sebagai struktur dasar untuk layar, dengan AppBar dan konten di dalamnya
     Scaffold(
         topBar = {
             InventoryTopAppBar(
@@ -70,60 +77,71 @@ fun ItemEntryScreen(
             )
         }
     ) { innerPadding ->
+        // Menyusun konten layar dengan padding dan kemampuan scroll vertikal
         ItemEntryBody(
             itemUiState = viewModel.itemUiState,
-            onItemValueChange = viewModel::updateUiState,
-            onSaveClick = { },
+            onItemValueChange = viewModel::updateUiState, // Mengupdate state saat nilai input berubah
+            onSaveClick = {
+                coroutineScope.launch {
+                    viewModel.saveItem() // Menyimpan item jika valid
+                    navigateBack() // Navigasi kembali setelah simpan
+                }
+            },
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
                     end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
                     top = innerPadding.calculateTopPadding()
                 )
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // Menambahkan scroll vertikal
                 .fillMaxWidth()
         )
     }
 }
 
+// Body utama untuk input form entri item
 @Composable
 fun ItemEntryBody(
     itemUiState: ItemUiState,
-    onItemValueChange: (ItemDetails) -> Unit,
-    onSaveClick: () -> Unit,
+    onItemValueChange: (ItemDetails) -> Unit, // Fungsi untuk mengupdate detail item
+    onSaveClick: () -> Unit, // Fungsi untuk menyimpan item
     modifier: Modifier = Modifier
 ) {
     Column(
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_large)),
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium))
-        ) {
+    ) {
+        // Form input untuk item
         ItemInputForm(
             itemDetails = itemUiState.itemDetails,
             onValueChange = onItemValueChange,
             modifier = Modifier.fillMaxWidth()
         )
+        // Tombol untuk menyimpan item
         Button(
             onClick = onSaveClick,
-            enabled = itemUiState.isEntryValid,
+            enabled = itemUiState.isEntryValid, // Hanya aktif jika input valid
             shape = MaterialTheme.shapes.small,
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text(text = stringResource(R.string.save_action))
+            Text(stringResource(R.string.save_action)) // Teks tombol simpan
         }
     }
 }
 
+// Form input untuk nama, harga, dan kuantitas item
 @Composable
 fun ItemInputForm(
     itemDetails: ItemDetails,
     modifier: Modifier = Modifier,
-    onValueChange: (ItemDetails) -> Unit = {},
-    enabled: Boolean = true
+    onValueChange: (ItemDetails) -> Unit = {}, // Fungsi untuk mengupdate item details
+    enabled: Boolean = true // Status apakah form bisa diubah
 ) {
     Column(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(dimensionResource(id = R.dimen.padding_medium))
     ) {
+        // Input untuk nama item
         OutlinedTextField(
             value = itemDetails.name,
             onValueChange = { onValueChange(itemDetails.copy(name = it)) },
@@ -137,6 +155,7 @@ fun ItemInputForm(
             enabled = enabled,
             singleLine = true
         )
+        // Input untuk harga item dengan simbol mata uang
         OutlinedTextField(
             value = itemDetails.price,
             onValueChange = { onValueChange(itemDetails.copy(price = it)) },
@@ -152,6 +171,7 @@ fun ItemInputForm(
             enabled = enabled,
             singleLine = true
         )
+        // Input untuk kuantitas item
         OutlinedTextField(
             value = itemDetails.quantity,
             onValueChange = { onValueChange(itemDetails.copy(quantity = it)) },
@@ -166,6 +186,7 @@ fun ItemInputForm(
             enabled = enabled,
             singleLine = true
         )
+        // Pesan yang menunjukkan bahwa field harus diisi
         if (enabled) {
             Text(
                 text = stringResource(R.string.required_fields),
@@ -175,6 +196,7 @@ fun ItemInputForm(
     }
 }
 
+// Preview untuk ItemEntryScreen
 @Preview(showBackground = true)
 @Composable
 private fun ItemEntryScreenPreview() {
