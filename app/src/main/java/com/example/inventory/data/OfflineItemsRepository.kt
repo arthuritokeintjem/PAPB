@@ -16,4 +16,22 @@
 
 package com.example.inventory.data
 
-class OfflineItemsRepository : ItemsRepository
+import kotlinx.coroutines.flow.Flow
+
+// Repository yang mengimplementasikan ItemsRepository, bertugas untuk mengelola operasi data secara offline menggunakan DAO (ItemDao).
+class OfflineItemsRepository(private val itemDao: ItemDao) : ItemsRepository {
+    // Mengambil semua item secara reaktif menggunakan Flow dari DAO (ItemDao).
+    override fun getAllItemsStream(): Flow<List<Item>> = itemDao.getAllItems()
+
+    // Mengambil item tertentu berdasarkan id secara reaktif menggunakan Flow dari DAO (ItemDao).
+    override fun getItemStream(id: Int): Flow<Item?> = itemDao.getItem(id)
+
+    // Menyisipkan item ke dalam database melalui DAO (ItemDao).
+    override suspend fun insertItem(item: Item) = itemDao.insert(item)
+
+    // Menghapus item dari database melalui DAO (ItemDao).
+    override suspend fun deleteItem(item: Item) = itemDao.delete(item)
+
+    // Memperbarui item di database melalui DAO (ItemDao).
+    override suspend fun updateItem(item: Item) = itemDao.update(item)
+}
