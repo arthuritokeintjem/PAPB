@@ -16,11 +16,21 @@
 
 package com.example.inventory.data
 
+import androidx.room.Entity
+import androidx.room.PrimaryKey
 
 /**
  * Entity data class represents a single row in the database.
  */
-class Item(
+
+/* Kelas item di bawah ini merupakan model data yang digunakan
+ oleh Room untuk mengelola entitas Item dalam database. Setiap
+ instance dari kelas ini berfungsi sebagai baris dalam tabel "items".
+*/
+
+@Entity(tableName = "items")
+data class Item(
+    @PrimaryKey
     val id: Int = 0,
     val name: String,
     val price: Double,
