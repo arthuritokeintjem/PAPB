@@ -59,29 +59,29 @@ import com.example.inventory.ui.navigation.NavigationDestination
 import com.example.inventory.ui.theme.InventoryTheme
 
 object ItemDetailsDestination : NavigationDestination {
-    override val route = "item_details"
-    override val titleRes = R.string.item_detail_title
-    const val itemIdArg = "itemId"
-    val routeWithArgs = "$route/{$itemIdArg}"
+    override val route = "item_details" // Menyimpan rute destinasi.
+    override val titleRes = R.string.item_detail_title // Judul untuk tampilan ini.
+    const val itemIdArg = "itemId" // Parameter itemId yang digunakan dalam rute.
+    val routeWithArgs = "$route/{$itemIdArg}" // Rute dengan argumen intemId.
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ItemDetailsScreen(
-    navigateToEditItem: (Int) -> Unit,
-    navigateBack: () -> Unit,
-    modifier: Modifier = Modifier
+    navigateToEditItem: (Int) -> Unit, // Fungsi untuk navigasi ke edit item.
+    navigateBack: () -> Unit, // Fungsi untuk navigasi kembali.
+    modifier: Modifier = Modifier // Modifier untuk penataan UI.
 ) {
     Scaffold(
         topBar = {
             InventoryTopAppBar(
-                title = stringResource(ItemDetailsDestination.titleRes),
-                canNavigateBack = true,
-                navigateUp = navigateBack
+                title = stringResource(ItemDetailsDestination.titleRes), // Menampilkan judul dari resource string.
+                canNavigateBack = true, // Menampilkan navigasi kembali.
+                navigateUp = navigateBack // Fungsi untuk kembali.
             )
         }, floatingActionButton = {
             FloatingActionButton(
-                onClick = { navigateToEditItem(0) },
+                onClick = { navigateToEditItem(0) }, // Tombol untuk mengedit item.
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.padding(dimensionResource(id = R.dimen.padding_large))
 
@@ -93,27 +93,28 @@ fun ItemDetailsScreen(
             }
         }, modifier = modifier
     ) { innerPadding ->
+        // Body utama yang berisi UI untuk detail item.
         ItemDetailsBody(
-            itemDetailsUiState = ItemDetailsUiState(),
-            onSellItem = { },
-            onDelete = { },
+            itemDetailsUiState = ItemDetailsUiState(), // State item yang menampilkan detail.
+            onSellItem = { }, // Fungsi untuk menjual item.
+            onDelete = { }, // Fungsi untuk menghapus item.
             modifier = Modifier
                 .padding(
                     start = innerPadding.calculateStartPadding(LocalLayoutDirection.current),
                     end = innerPadding.calculateEndPadding(LocalLayoutDirection.current),
                     top = innerPadding.calculateTopPadding()
                 )
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(rememberScrollState()) // Membuat scroll vertikal untuk body
         )
     }
 }
 
 @Composable
 private fun ItemDetailsBody(
-    itemDetailsUiState: ItemDetailsUiState,
-    onSellItem: () -> Unit,
-    onDelete: () -> Unit,
-    modifier: Modifier = Modifier
+    itemDetailsUiState: ItemDetailsUiState, // State yang berisi data item.
+    onSellItem: () -> Unit, // Fungsi untuk menjual item.
+    onDelete: () -> Unit, // Fungsi untuk menghapus item.
+    modifier: Modifier = Modifier // Modifier untuk penataan UI.
 ) {
     Column(
         modifier = modifier.padding(dimensionResource(id = R.dimen.padding_medium)),
@@ -121,10 +122,12 @@ private fun ItemDetailsBody(
     ) {
         var deleteConfirmationRequired by rememberSaveable { mutableStateOf(false) }
 
+        // Menampilkan detail item.
         ItemDetails(
-            item = itemDetailsUiState.itemDetails.toItem(),
+            item = itemDetailsUiState.itemDetails.toItem(), // Konversi itemDetails menjadi model Item.
             modifier = Modifier.fillMaxWidth()
         )
+        // Tombol untuk menjual item.
         Button(
             onClick = onSellItem,
             modifier = Modifier.fillMaxWidth(),
@@ -133,6 +136,7 @@ private fun ItemDetailsBody(
         ) {
             Text(stringResource(R.string.sell))
         }
+        // Tombol untuk menghapus item.
         OutlinedButton(
             onClick = { deleteConfirmationRequired = true },
             shape = MaterialTheme.shapes.small,
@@ -140,6 +144,7 @@ private fun ItemDetailsBody(
         ) {
             Text(stringResource(R.string.delete))
         }
+        // Dialog konfirmasi untuk penghapusan item.
         if (deleteConfirmationRequired) {
             DeleteConfirmationDialog(
                 onDeleteConfirm = {
@@ -172,6 +177,7 @@ fun ItemDetails(
                 dimensionResource(id = R.dimen.padding_medium)
             )
         ) {
+            // Menampilkan baris detail item.
             ItemDetailsRow(
                 labelResID = R.string.item,
                 itemDetail = item.name,

@@ -30,28 +30,32 @@ import com.example.inventory.ui.item.ItemEntryViewModel
 
 /**
  * Provides Factory to create instance of ViewModel for the entire Inventory app
+ * Kelas ini menyediakan Factory untuk membuat instance dari ViewModel yang digunakan di seluruh aplikasi Inventory.
+ * Setiap ViewModel memiliki inisialisasi khusus untuk memenuhi kebutuhan masing-masing.
  */
 object AppViewModelProvider {
+    // Factory untuk membuat ViewModel
     val Factory = viewModelFactory {
-        // Initializer for ItemEditViewModel
+        // Initializer untuk ItemEditViewModel
         initializer {
             ItemEditViewModel(
-                this.createSavedStateHandle()
+                this.createSavedStateHandle() // Menggunakan saved state untuk menangani status dan data terkait ViewModel.
             )
         }
-        // Initializer for ItemEntryViewModel
+        // Initializer untuk ItemEntryViewModel
         initializer {
-            ItemEntryViewModel()
+            // Membuat instance ItemEntryViewModel dengan mengambil repository dari container aplikasi.
+            ItemEntryViewModel(inventoryApplication().container.itemsRepository)
         }
 
-        // Initializer for ItemDetailsViewModel
+        // Initializer untuk ItemDetailsViewModel
         initializer {
             ItemDetailsViewModel(
-                this.createSavedStateHandle()
+                this.createSavedStateHandle() // Menggunakan saved state untuk menangani status dan data terkait ViewModel.
             )
         }
 
-        // Initializer for HomeViewModel
+        // Initializer untuk HomeViewModel
         initializer {
             HomeViewModel()
         }
@@ -63,4 +67,8 @@ object AppViewModelProvider {
  * [InventoryApplication].
  */
 fun CreationExtras.inventoryApplication(): InventoryApplication =
+    // Mengambil objek [Application] dari [CreationExtras] menggunakan key
+    // yang sudah ditentukan sebelumnya dalam [AndroidViewModelFactory.APPLICATION_KEY].
+    // Kunci ini digunakan untuk menyimpan dan mengakses aplikasi yang sedang berjalan,
+    // khususnya yang bertipe [InventoryApplication].
     (this[AndroidViewModelFactory.APPLICATION_KEY] as InventoryApplication)
